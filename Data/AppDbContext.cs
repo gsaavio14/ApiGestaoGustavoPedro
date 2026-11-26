@@ -1,3 +1,4 @@
+using ApiGestaoProcessos.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace ApiGestaoProcessos.Data
@@ -9,6 +10,10 @@ namespace ApiGestaoProcessos.Data
         {
 
         }
+
+        public DbSet<Cliente> Clientes { get; set; }
+
+        public DbSet<Marcacao> Marcacoes { get; set; }
 
     }
 }
