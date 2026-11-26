@@ -11,5 +11,8 @@ namespace ApiGestaoProcessos.Entities
 
         [Column("nome_mar")]
         public string Nome { get; set; } = string.Empty;
+
+        
+        public ICollection<Processo>? Processos { get; set; }
     }
 }

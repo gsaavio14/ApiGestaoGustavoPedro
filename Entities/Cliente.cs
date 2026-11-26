@@ -12,5 +12,8 @@ namespace ApiGestaoProcessos.Entities
 
         [Column("nome")]
         public string Nome { get; set; } = string.Empty;
+
+        //[JsonIgnore]
+        public ICollection<Processo>? Processos { get; set; }
     }
 }

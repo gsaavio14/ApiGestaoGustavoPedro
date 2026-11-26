@@ -11,9 +11,15 @@ namespace ApiGestaoProcessos.Data
 
         }
 
+        public DbSet<Processo> Processos { get; set; }
+
         public DbSet<Cliente> Clientes { get; set; }
 
         public DbSet<Marcacao> Marcacoes { get; set; }
+
+        public DbSet<Etapa> Etapas { get; set; }
+
+        public DbSet<ProcessoEtapa> ProcessosEtapas { get; set; }
 
     }
 }
