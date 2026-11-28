@@ -1,5 +1,6 @@
 using ApiGestaoProcessos.Data;
 using ApiGestaoProcessos.Profiles;
+using ApiGestaoProcessos.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +13,9 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseMySql(connecti
 
 // Configuração de AutoMapper
 builder.Services.AddAutoMapper(config => config.AddProfile<AppProfile>());
+
+// Registro de Services
+builder.Services.AddScoped<ClienteService>();
 
 // Add services to the container.
 
