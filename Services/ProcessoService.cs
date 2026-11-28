@@ -56,5 +56,62 @@ namespace ApiGestaoProcessos.Services
 
             return processo;
         }
+
+        public async Task<bool> AssociarMarcacao(int processoId, int marcacaoId)
+        {
+            var processo = await _context.Processos
+                .Include(p => p.Marcacoes)
+                .FirstOrDefaultAsync(p => p.Id == processoId);
+            var marcacao = await _context.Marcacoes
+                .FirstOrDefaultAsync(m => m.Id == marcacaoId);
+
+            if (processo is null || marcacao is null)
+            {
+                return false;
+            }
+
+            processo.Marcacoes ??= new List<Marcacao>();
+
+            if (!processo.Marcacoes.Any(m => m.Id == marcacaoId))
+            {
+                processo.Marcacoes.Add(marcacao);
+                await _context.SaveChangesAsync();
+            }
+
+            return true;
+        }
+
+        public async Task<(bool ProcessoExiste, bool EtapaExiste, bool JaAssociada, ProcessoEtapaResponseDto? Resultado)> 
+            AddEtapa(int processoId, ProcessoEtapaDto data)
+            {
+
+                var processoExiste = await _context.Processos.AnyAsync(x => x.Id == processoId);
+                var etapaExiste = await _context.Etapas.AnyAsync(x => x.Id == data.EtapaId);
+
+                if (!processoExiste || !etapaExiste)
+                {
+                    return (processoExiste, etapaExiste, false, null);
+                }
+
+                var jaAssociada = await _context.ProcessosEtapas.AnyAsync(x => x.ProcessoId == processoId && x.EtapaId == data.EtapaId);
+
+                if (jaAssociada) 
+                {
+                    return (true, true, true, null);
+                }
+
+                var processoEtapa = _mapper.Map<ProcessoEtapa>(data);
+                processoEtapa.ProcessoId = processoId;
+
+                _context.ProcessosEtapas.Add(processoEtapa);
+                await _context.SaveChangesAsync();
+
+                var resultado = await _context.ProcessosEtapas
+                                        .Where(x => x.ProcessoId == processoId && x.EtapaId == data.EtapaId)
+                                        .ProjectTo<ProcessoEtapaResponseDto>(_mapper.ConfigurationProvider)
+                                        .FirstAsync();
+
+                return (true, true, false, resultado);
+            }
     }
 }

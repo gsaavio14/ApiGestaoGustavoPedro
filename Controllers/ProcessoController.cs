@@ -110,5 +110,57 @@ namespace ApiGestaoProcessos.Controllers
 
             return NoContent();
         }
+
+        [HttpPost("{id}/concluir")]
+        public async Task<IActionResult> Concluir(int id)
+        {
+            try
+            {
+                var processoExistente = await _context.Processos.FirstOrDefaultAsync(x => x.Id == id);
+
+                if (processoExistente is null)
+                {
+                    return NotFound(new { Mensagem = $"Processo informado não encontrado" });
+                }
+
+                processoExistente.Situacao = "Concluído";
+
+                await _context.SaveChangesAsync();
+
+                return Ok(processoExistente);
+            }
+            catch
+            {
+                return Problem("Ocorreram erros ao finalizar o processo");
+            }
+        }
+
+        [HttpPost("{id}/marcacoes/{marcacaoId}")]
+        public async Task<IActionResult> AddMarcacao(int id, int marcacaoId)
+        {
+            var associated = await _service.AssociarMarcacao(id, marcacaoId);
+
+            return associated
+                ? NoContent()
+                : NotFound(new { Mensagem = "Processo ou marcação não encontrado" });
+        }
+
+        [HttpPost("{id}/etapas")]
+        public async Task<IActionResult> AddEtapa(int id, [FromBody] ProcessoEtapaDto data)
+        {
+            var result = await _service.AddEtapa(id, data);
+
+            if (!result.ProcessoExiste || !result.EtapaExiste)
+            {
+                return NotFound(new { Mensagem = "Processo e/ou etapa não encontrado" });
+            }
+
+            if (result.JaAssociada)
+            {
+                return Conflict(new { Mensagem = "A etapa já está associada ao processo" });
+            }
+
+            return CreatedAtAction(nameof(GetById), new { id }, result.Resultado);
+        }
     }
 }
